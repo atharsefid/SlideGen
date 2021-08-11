@@ -27,8 +27,8 @@ class Embedder:
         device = torch.device("cuda:" + str(device))
         # Load AutoModel from huggingface model repository
         tokenizer = AutoTokenizer.from_pretrained(
-            "sentence-transformers/bert-base-nli-mean-tokenssentence-transformers/bert-base-nli-mean-tokens")
-        model = AutoModel.from_pretrained("sentence-transformers/bert-base-nli-mean-tokens").to(device)
+            "sentence-transformers/paraphrase-TinyBERT-L6-v2")
+        model = AutoModel.from_pretrained("sentence-transformers/paraphrase-TinyBERT-L6-v2").to(device)
 
         # tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large")
         # model = AutoModel.from_pretrained("facebook/bart-large").to(device)
@@ -146,23 +146,46 @@ def slide_section_match(argument):
         slide_embeds = embedder.embed_document(slides, device)
         mapping = match(slide_embeds, section_embeds)
         assert len(mapping) == len(slides)
-        with open('../ppt_generation/slide_generator_data/data/' + str(index) + '/slide_section_map.json',
-                  'w') as map_file:
+        with open('raw_data/' + str(index) + '/'+str(index) + '.section_map.json', 'w') as map_file:
             json.dump(mapping, map_file)
     except Exception as e:
         print('-- Exception', index, e)
 
 
-def process_range(range_lower, range_upper, device):
+def process_range(input):
+    range_lower, range_upper, device = input
     for task_id in range(range_lower, range_upper):
-        pdf_file = glob.glob('../ppt_generation/slide_generator_data/data/' + str(task_id) + '/grobid/*.tei.xml')[0]
-        ppt_file = '../ppt_generation/slide_generator_data/data/' + str(task_id) + '/slide.clean_tika.xml'
+        pdf_file = glob.glob('raw_data/' + str(task_id) + '/*.tei.xml')[0]
+        ppt_file = glob.glob('raw_data/' + str(task_id) + '/*.clean_tika.xml')[0]
         slide_section_match((pdf_file, ppt_file, task_id, device))
 
 
-ranges = [(0, 1000, 0), (1000, 2000, 1), (2000, 3000, 2), (3000, 4000, 3)]
+import logging
+from multiprocessing import Pool
+
+def proc_wrapper(func, *args, **kwargs):
+    """Print exception because multiprocessing lib doesn't return them right."""
+    try:
+        return func(*args, **kwargs)
+    except Exception as e:
+        logging.exception(e)
+        raise
+def callback(result):
+    print('success', result)
+
+def callback_error(result):
+    print('-----error', result)
+
+
+ranges = [(0, 1000, 0), (1000, 2000, 1), (2000, 3000, 2), (3000, 4500, 3)]
+
 pool = Pool(4)  # since there are 4 gpus
 result = pool.imap(process_range, ranges)
+for r in result:
+    if isinstance(r, Exception):
+        print("Got exception: {}".format(result))
 pool.close()
 pool.join()
 print('Finished processing all files.')
+
+# process_range(1,1000, 0)

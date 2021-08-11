@@ -50,9 +50,9 @@ references = []
 giant_summary_count = 0
 for i in range(4250, 4500):
     print(i)
-    pdf_file = glob.glob('../ppt_generation/slide_generator_data/data/' + str(i) + '/grobid/*.tei.xml')[0]
-    ppt_file = '../ppt_generation/slide_generator_data/data/' + str(i) + '/slide.clean_tika.xml'
-    map_file = '../ppt_generation/slide_generator_data/data/' + str(i) + '/slide_section_map.json'
+    pdf_file = glob.glob('../raw_data/' + str(i) + '/grobid/*.tei.xml')[0]
+    ppt_file = '../raw_data/' + str(i) + '/slide.clean_tika.xml'
+    map_file = '../raw_data/' + str(i) + '/slide_section_map.json'
     sections = ['\t'.join(section).replace('\n', '\t') for section in read_pdf(pdf_file)]
     article = ' '.join(sections)
     slides = ['\t'.join(slide).replace('\n', '\t') for slide in read_ppt_tika_xml(ppt_file)]

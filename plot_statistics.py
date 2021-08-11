@@ -13,7 +13,7 @@ def plot_xent_results():
     plt.show()
 
 
-def plot_section_lengths(train_data='data_generator/train_section_slides.json'):
+def plot_section_lengths(train_data='json_data/train_section_slides.json'):
     huge_sections_count = 0
     huge_size = 10000
     lengths = []

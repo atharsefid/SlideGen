@@ -5,6 +5,7 @@ import nltk
 import numpy as np
 import os
 import rouge
+from filelock import FileLock
 import string
 import sys
 from collections import defaultdict
@@ -15,11 +16,15 @@ from nltk.stem import SnowballStemmer
 from nltk.stem import WordNetLemmatizer
 from scipy.spatial.distance import cosine
 
-sys.path.insert(0, '..')
+sys.path.insert(0, '.')
 from data_loader import read_pdf, read_ppt_tika_xml, read_ppt_xml
 
+with FileLock(".lock") as lock:
+    nltk.download("punkt", quiet=True)
+    nltk.download("stopwords", quiet=True)
 
-class Bart_data_generator:
+
+class BartDataGenerator:
 
     def __init__(self):
         self.stopset = set(stopwords.words('english')).union(string.punctuation)
@@ -28,14 +33,14 @@ class Bart_data_generator:
         self.rouge = rouge.Rouge()
         self.covered_sents = 0
         self.needed_sents = 0
-        self.evaluator = rouge.Rouge(metrics=['rouge-n'],
-                                     max_n=2,
-                                     limit_length=False,
-                                     apply_avg=True,
-                                     apply_best=None,
-                                     alpha=0.5,  # Default F1_score
-                                     weight_factor=1.2,
-                                     stemming=True)
+        self.evaluator = rouge.Rouge()#metrics=['rouge-n'])
+                                     # max_n=2,
+                                     #limit_length=False,
+                                     # apply_avg=True,
+                                     # apply_best=None,
+                                     # alpha=0.5,  # Default F1_score
+                                     # weight_factor=1.2,
+                                     # stemming=True)
         self.total_score = 0
 
     def normalize_tokens(self, text):
@@ -85,16 +90,16 @@ class Bart_data_generator:
 
     @staticmethod
     def generate_data_section_slide_tika():
-        train_source_file = jsonlines.open('train_section_slides_t5.json', mode='w')
-        test_source_file = jsonlines.open('test_section_slides_t5.json', mode='w')
-        val_source_file = jsonlines.open('val_section_slides_t5.json', mode='w')
+        train_source_file = jsonlines.open('json_data/train_section_slides.json', mode='w')
+        test_source_file = jsonlines.open('json_data/test_section_slides.json', mode='w')
+        val_source_file = jsonlines.open('json_data/val_section_slides.json', mode='w')
 
-        for i in range(4500):
+        for i in range(4000,4500):
             print(i)
-            pdf_file = glob('../../ppt_generation/slide_generator_data/data/' + str(i) + '/grobid/*.tei.xml')[0]
-            ppt_tika_file = '../../ppt_generation/slide_generator_data/data/' + str(i) + '/slide.clean_tika.xml'
+            pdf_file = glob('raw_data/' + str(i) + '/*.tei.xml')[0]
+            ppt_tika_file = glob('raw_data/' + str(i) + '/*.clean_tika.xml')[0]
             slides = ['\t'.join(slide).replace('\n', '\t') for slide in read_ppt_tika_xml(ppt_tika_file)]
-            map_file = '../../ppt_generation/slide_generator_data/data/' + str(i) + '/slide_section_map.json'
+            map_file = glob('raw_data/' + str(i) + '/*.section_map.json')[0]
             sections = ['\t'.join(section).replace('\n', '\t') for section in read_pdf(pdf_file)]
 
             try:
@@ -124,21 +129,21 @@ class Bart_data_generator:
 
     @staticmethod
     def generate_data_section_slide():
-        train_source_file = jsonlines.open('train_section_slides_CLEAN.json', mode='w')
-        test_source_file = jsonlines.open('test_section_slides_CLEAN.json', mode='w')
-        val_source_file = jsonlines.open('val_section_slides_CLEAN.json', mode='w')
+        train_source_file = jsonlines.open('json_data/train_section_slides.json', mode='w')
+        test_source_file = jsonlines.open('json_data/test_section_slides.json', mode='w')
+        val_source_file = jsonlines.open('json_data/val_section_slides.json', mode='w')
         tika_count = 0
         for i in range(4500):
             print(i)
-            pdf_file = glob('../../ppt_generation/slide_generator_data/data/' + str(i) + '/grobid/*.tei.xml')[0]
-            ppt_file = '../../ppt_generation/slide_generator_data/data/' + str(i) + '/layered_slide.xml'
+            pdf_file = glob('raw_data/' + str(i) + '/*.tei.xml')[0]
+            ppt_file = glob('raw_data/' + str(i) + '/*.layered_slide.xml')[0]
             if os.path.isfile(ppt_file):
                 slides = ['\t'.join(slide).replace('\n', '\t') for slide in read_ppt_xml(ppt_file)]
             else:
                 tika_count += 1
-                ppt_tika_file = '../../ppt_generation/slide_generator_data/data/' + str(i) + '/slide.clean_tika.xml'
+                ppt_tika_file = glob('raw_data/' + str(i) + '/*.clean_tika.xml')[0]
                 slides = ['\t'.join(slide).replace('\n', '\t') for slide in read_ppt_tika_xml(ppt_tika_file)]
-            map_file = '../../ppt_generation/slide_generator_data/data/' + str(i) + '/slide_section_map.json'
+            map_file = glob('raw_data/' + str(i) + '/*.section_map.json')[0]
             sections = ['\t'.join(section).replace('\n', '\t') for section in read_pdf(pdf_file)]
 
             try:
@@ -173,5 +178,5 @@ class Bart_data_generator:
         print('Total tika xmls being used are:', tika_count)
 
 
-dg = Bart_data_generator()
+dg = BartDataGenerator()
 dg.generate_data_section_slide_tika()

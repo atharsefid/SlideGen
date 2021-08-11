@@ -33,6 +33,7 @@ from s2s import Seq2SeqTrainerAdvance
 with FileLock(".lock") as lock:
     nltk.download("punkt", quiet=True)
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -100,18 +101,18 @@ class DataTrainingArguments:
         metadata={"help": "The name of the column in the datasets containing the summaries (for summarization)."},
     )
     train_file: Optional[str] = field(
-        default="data_generator/train_section_slides_t5.json",
+        default="json_data/train_section_slides.json",
         metadata={"help": "The input training data file (a jsonlines or csv file)."}
     )
     validation_file: Optional[str] = field(
-        default="data_generator/val_section_slides_t5.json",
+        default="json_data/val_section_slides.json",
         metadata={
             "help": "An optional input evaluation data file to evaluate the metrics (rouge/sacreblue) on "
                     "(a jsonlines or csv file)."
         },
     )
     test_file: Optional[str] = field(
-        default="data_generator/test_section_slides_t5.json",
+        default="json_data/test_section_slides.json",
         metadata={
             "help": "An optional input test data file to evaluate the metrics (rouge/sacreblue) on "
                     "(a jsonlines or csv file)."
