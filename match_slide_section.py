@@ -1,11 +1,7 @@
-import glob
 import json
-import math
+
 import numpy as np
 import torch
-import traceback
-from multiprocessing import Lock
-from multiprocessing import Pool
 from scipy import spatial
 from transformers import AutoTokenizer, AutoModel
 
@@ -146,7 +142,7 @@ def slide_section_match(argument):
         slide_embeds = embedder.embed_document(slides, device)
         mapping = match(slide_embeds, section_embeds)
         assert len(mapping) == len(slides)
-        with open('raw_data/' + str(index) + '/'+str(index) + '.section_map.json', 'w') as map_file:
+        with open('raw_data/' + str(index) + '/' + str(index) + '.section_map.json', 'w') as map_file:
             json.dump(mapping, map_file)
     except Exception as e:
         print('-- Exception', index, e)
@@ -163,6 +159,7 @@ def process_range(input):
 import logging
 from multiprocessing import Pool
 
+
 def proc_wrapper(func, *args, **kwargs):
     """Print exception because multiprocessing lib doesn't return them right."""
     try:
@@ -170,8 +167,11 @@ def proc_wrapper(func, *args, **kwargs):
     except Exception as e:
         logging.exception(e)
         raise
+
+
 def callback(result):
     print('success', result)
+
 
 def callback_error(result):
     print('-----error', result)

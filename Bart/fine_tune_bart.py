@@ -1,9 +1,10 @@
 import logging
+import os
+import sys
+from typing import Optional
+
 import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
-import os
-import re
-import sys
 import transformers
 from dataclasses import dataclass, field
 from datasets import load_dataset, load_metric
@@ -16,23 +17,16 @@ from transformers import (
     HfArgumentParser,
     MBartTokenizer,
     MBartTokenizerFast,
-    Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
     default_data_collator,
-    set_seed,
-    LongformerConfig,
-    LongformerModel,
-    T5Tokenizer,
-    TFT5Model
+    set_seed
 )
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
-from typing import Optional
 
 from s2s import Seq2SeqTrainerAdvance
 
 with FileLock(".lock") as lock:
     nltk.download("punkt", quiet=True)
-
 
 logger = logging.getLogger(__name__)
 

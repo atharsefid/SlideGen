@@ -1,20 +1,18 @@
 import json
-import jsonlines
-import math
-import nltk
-import numpy as np
 import os
-import rouge
-from filelock import FileLock
 import string
 import sys
-from collections import defaultdict
 from glob import glob
+
+import jsonlines
+import nltk
+import numpy as np
+import rouge
+from filelock import FileLock
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.stem import WordNetLemmatizer
-from scipy.spatial.distance import cosine
 
 sys.path.insert(0, '.')
 from data_loader import read_pdf, read_ppt_tika_xml, read_ppt_xml
@@ -33,14 +31,14 @@ class BartDataGenerator:
         self.rouge = rouge.Rouge()
         self.covered_sents = 0
         self.needed_sents = 0
-        self.evaluator = rouge.Rouge()#metrics=['rouge-n'])
-                                     # max_n=2,
-                                     #limit_length=False,
-                                     # apply_avg=True,
-                                     # apply_best=None,
-                                     # alpha=0.5,  # Default F1_score
-                                     # weight_factor=1.2,
-                                     # stemming=True)
+        self.evaluator = rouge.Rouge()  # metrics=['rouge-n'])
+        # max_n=2,
+        # limit_length=False,
+        # apply_avg=True,
+        # apply_best=None,
+        # alpha=0.5,  # Default F1_score
+        # weight_factor=1.2,
+        # stemming=True)
         self.total_score = 0
 
     def normalize_tokens(self, text):
@@ -94,7 +92,7 @@ class BartDataGenerator:
         test_source_file = jsonlines.open('json_data/test_section_slides.json', mode='w')
         val_source_file = jsonlines.open('json_data/val_section_slides.json', mode='w')
 
-        for i in range(4000,4500):
+        for i in range(4500):
             print(i)
             pdf_file = glob('raw_data/' + str(i) + '/*.tei.xml')[0]
             ppt_tika_file = glob('raw_data/' + str(i) + '/*.clean_tika.xml')[0]
